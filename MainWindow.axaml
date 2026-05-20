@@ -1,0 +1,106 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="using:Projektanker.Icons.Avalonia"
+        x:Class="SEUtilityTools.MainWindow"
+        Title="SE Utility Tools"
+        Width="1030"
+        Height="650"
+        Background="#0a0a0a">
+
+    <DockPanel>
+        <Border DockPanel.Dock="Left" 
+                Background="#161616" 
+                Width="240"
+                BorderBrush="#252525" 
+                BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto,*,Auto">
+                
+                <!-- Header -->
+                <StackPanel Grid.Row="0" Margin="20,24,20,16">
+                    <TextBlock Text="SE UTILITY" 
+                               FontSize="20" 
+                               FontWeight="Bold" 
+                               Foreground="White"
+                               Margin="0,0,0,16"/>
+                    <Button Background="#00d084"
+                            Foreground="White"
+                            CornerRadius="20"
+                            Padding="16,10"
+                            HorizontalAlignment="Stretch">
+                        <TextBlock Text="NEW CALC" 
+                                   FontWeight="SemiBold" 
+                                   HorizontalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Navigation -->
+                <StackPanel Grid.Row="1" Margin="12,0" Spacing="4">
+                    <Button x:Name="HomeButton" 
+                            Classes="navItem" 
+                            Click="HomeButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="14">
+                            <ic:Icon Value="fa-solid fa-house" 
+                                      FontSize="18" 
+                                      Foreground="#a0a0a0"/>
+                            <TextBlock Text="Home" 
+                                       Foreground="#c0c0c0"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button x:Name="BlueprintCalculatorButton" 
+                            Classes="navItem" 
+                            Click="BlueprintCalculatorButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="14">
+                            <ic:Icon Value="fa-solid fa-cubes" 
+                                      FontSize="18" 
+                                      Foreground="#a0a0a0"/>
+                            <TextBlock Text="Blueprint Calculator" 
+                                       Foreground="#c0c0c0"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button x:Name="ServerQueryButton" 
+                            Classes="navItem" 
+                            Click="ServerQueryButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="14">
+                            <ic:Icon Value="fa-solid fa-server" 
+                                      FontSize="18" 
+                                      Foreground="#a0a0a0"/>
+                            <TextBlock Text="Server Query" 
+                                       Foreground="#c0c0c0"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Footer -->
+                <Border Grid.Row="2" 
+                        Margin="16,16,16,20" 
+                        Padding="12"
+                        CornerRadius="10"
+                        Background="#1e1e1e">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Border Width="32" Height="32" 
+                                CornerRadius="16" 
+                                ClipToBounds="True"
+                                Background="#333"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Engineer" Foreground="White" FontSize="13" FontWeight="Bold"/>
+                            <TextBlock Text="Ready" Foreground="#00d084" FontSize="11"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Content Area -->
+        <Panel x:Name="contentArea" Background="#0f0f0f">
+            <!-- Page content goes here -->
+        </Panel>
+    </DockPanel>
+</Window>
