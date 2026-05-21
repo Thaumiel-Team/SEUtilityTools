@@ -80,7 +80,7 @@ static class Program
             LogManager.Critical($"Application crashed: {ex}");
             LogManager.SaveLogs();
 
-            var result = await ShowCrashDialogAsync(ex);
+            bool result = await ShowCrashDialogAsync(ex);
 
             if (result)
             {
