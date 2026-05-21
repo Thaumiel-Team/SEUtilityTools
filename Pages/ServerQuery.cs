@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Diagnostics;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -191,7 +192,12 @@ namespace SEUtilityTools.Pages
         {
             Button refreshBtn = new()
             {
-                Content = new ic::Icon { Value = "fa-solid fa-rotate", FontSize = 11, Foreground = new SolidColorBrush(Color.Parse("#606060")) },
+                Content = new ic::Icon
+                {
+                    Value = "fa-solid fa-rotate",
+                    FontSize = 11,
+                    Foreground = new SolidColorBrush(Color.Parse("#606060"))
+                },
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
                 Padding = new Thickness(6),
@@ -199,6 +205,32 @@ namespace SEUtilityTools.Pages
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Top,
                 IsVisible = false
+            };
+
+            Button joinBtn = new()
+            {
+                Content = new ic::Icon
+                {
+                    Value = "fa-solid fa-arrow-right-to-bracket",
+                    FontSize = 11,
+                    Foreground = new SolidColorBrush(Color.Parse("#606060"))
+                },
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Padding = new Thickness(6),
+                Cursor = new Cursor(StandardCursorType.Hand),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top,
+                IsVisible = false
+            };
+
+            joinBtn.Click += (_, e) =>
+            {
+                e.Handled = true;
+                Process.Start(new ProcessStartInfo($"steam://connect/{server.Ip}:{server.Port}")
+                {
+                    UseShellExecute = true
+                });
             };
 
             refreshBtn.Click += async (_, e) =>
@@ -242,12 +274,24 @@ namespace SEUtilityTools.Pages
                 }
             };
 
+            StackPanel actionButtons = new()
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top,
+                Children =
+                {
+                    joinBtn,
+                    refreshBtn
+                }
+            };
+
             Grid cardContent = new()
             {
                 Children =
                 {
                     textStack,
-                    refreshBtn
+                    actionButtons
                 }
             };
 
@@ -262,6 +306,7 @@ namespace SEUtilityTools.Pages
 
             card.PointerEntered += (_, _) =>
             {
+                joinBtn.IsVisible = true;
                 refreshBtn.IsVisible = true;
                 if (_selectedServer != server)
                     card.Background = new SolidColorBrush(Color.Parse("#1e1e1e"));
@@ -269,6 +314,7 @@ namespace SEUtilityTools.Pages
 
             card.PointerExited += (_, _) =>
             {
+                joinBtn.IsVisible = false;
                 refreshBtn.IsVisible = false;
                 if (_selectedServer != server)
                     card.Background = Brushes.Transparent;
@@ -454,7 +500,7 @@ namespace SEUtilityTools.Pages
                 }
 
                 AddCell(string.IsNullOrWhiteSpace(player.Name) ? "—" : player.Name, 0);
-                AddCell(player.Duration.ToString(@"hh\:mm\:ss"), 2, true);
+                AddCell(player.Duration.ToString(@"hh\:mm\:ss"), 1, true);
 
                 rowsPanel.Children.Add(new Border
                 {
