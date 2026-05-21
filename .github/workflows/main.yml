@@ -1,0 +1,88 @@
+name: SEUtilityTools Auto Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore
+
+      - name: Publish — Windows
+        run: dotnet publish --configuration WINDOWS --no-restore
+
+      - name: Publish — Windows (Self-Contained)
+        run: dotnet publish --configuration WINDOWS-SELF --no-restore
+
+      - name: Publish — Linux
+        run: dotnet publish --configuration LINUX --no-restore
+
+      - name: Publish — Linux (Self-Contained)
+        run: dotnet publish --configuration LINUX-SELF --no-restore
+
+      - name: Upload Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: SEUtilityTools-Windows
+          path: bin/Windows/Release/
+
+      - name: Upload Windows (Self-Contained)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SEUtilityTools-Windows-SC
+          path: bin/Windows/Self/
+
+      - name: Upload Linux
+        uses: actions/upload-artifact@v4
+        with:
+          name: SEUtilityTools-Linux
+          path: bin/Linux/Release/
+
+      - name: Upload Linux (Self-Contained)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SEUtilityTools-Linux-SC
+          path: bin/Linux/Self/
+
+      - name: Create draft release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          tag_name: build-${{ github.run_number }}
+          name: "Build #${{ github.run_number }} — ${{ github.sha }}"
+          body: |
+            Automated draft release from commit ${{ github.sha }}.
+
+            | File | Description |
+            |---|---|
+            | `SEUtilityTools-Windows.exe` | Windows — requires .NET 10 runtime |
+            | `SEUtilityTools-Windows-SC.exe` | Windows — self-contained (no runtime needed) |
+            | `SEUtilityTools-Linux` | Linux — requires .NET 10 runtime |
+            | `SEUtilityTools-Linux-SC` | Linux — self-contained (no runtime needed) |
+
+            **To publish:** edit this release, set a proper version tag, update the notes, and hit Publish.
+          files: |
+            bin/Windows/Release/SEUtilityTools-Windows.exe
+            bin/Windows/Self/SEUtilityTools-Windows-SC.exe
+            bin/Linux/Release/SEUtilityTools-Linux
+            bin/Linux/Self/SEUtilityTools-Linux-SC
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
