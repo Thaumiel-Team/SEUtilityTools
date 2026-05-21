@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using SEUtilityTools.API.Yaml;
 
 namespace SEUtilityTools.API.Interface
 {
-    public abstract class PageData;
+    public abstract class PageData
+    {
+        public string ToYaml() => YamlConfig.Serializer.Serialize(this);
+    }
 }

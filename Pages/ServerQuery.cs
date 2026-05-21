@@ -164,7 +164,11 @@ namespace SEUtilityTools.Pages
                 {
                     Spacing = 8,
                     Margin = new Thickness(8, 10, 8, 16),
-                    Children = { ipBox, queryBtn }
+                    Children =
+                    {
+                        ipBox,
+                        queryBtn
+                    }
                 }
             };
         }
@@ -539,15 +543,13 @@ namespace SEUtilityTools.Pages
 
         public override void OnClicked()
         {
-            LogManager.Debug($"Opened QueryServer");
-            Data = PageDataManager.LoadData<QueryData>(this) ?? new QueryData();
+            Data = DataManager.LoadData<QueryData>(this) ?? new QueryData();
             RefreshServerList();
         }
 
         public override void OnClosed()
         {
-            LogManager.Debug($"Closed QueryServer");
-            PageDataManager.SaveData(this, Data);
+            DataManager.SaveData(this, Data);
         }
     }
 }
