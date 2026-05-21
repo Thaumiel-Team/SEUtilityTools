@@ -41,6 +41,7 @@ namespace SEUtilityTools.API.Yaml
 
             Deserializer = new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .IgnoreUnmatchedProperties()
             .Build();
         }
     }

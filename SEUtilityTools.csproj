@@ -11,6 +11,9 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'WINDOWS' ">
     <DefineConstants>WINDOWS</DefineConstants>
+	<PublishSingleFile>true</PublishSingleFile>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <AssemblyName>SEUtilityTools-Windows</AssemblyName>
     <OutputPath>bin\Windows\Release\</OutputPath>
     <Optimize>true</Optimize>
