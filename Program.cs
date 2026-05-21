@@ -22,7 +22,7 @@ static class Program
 
     public static Version Version = new(1, 0, 0);
     public static event Action? ApplicationStart;
-    public static Config Config => ConfigManager.Config!;
+    public static Config Config => ConfigManager.Config;
 
     [STAThread]
     public static async Task Main(string[] args)
