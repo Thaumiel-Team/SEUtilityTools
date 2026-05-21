@@ -1,14 +1,13 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Base;
+using MsBox.Avalonia.Enums;
+using SEUtilityTools.API.Helpers;
+using SEUtilityTools.API.Yaml;
 using System.Net;
 using System.Runtime.InteropServices;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using SEUtilityTools.API.Helpers;
-using SEUtilityTools.API.NET;
-using SEUtilityTools.API.Yaml;
 using ImageConverter = SEUtilityTools.API.Helpers.ImageConverter;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 
 namespace SEUtilityTools;
 
@@ -23,7 +22,7 @@ static class Program
 
     public static Version Version = new(1, 0, 0);
     public static event Action? ApplicationStart;
-    public static Config Config => ConfigManager.Config;
+    public static Config Config => ConfigManager.Config!;
 
     [STAThread]
     public static async Task Main(string[] args)
@@ -33,13 +32,14 @@ static class Program
             if (ev.ExceptionObject is Exception ex)
                 HandleCrashAsync(ex).GetAwaiter().GetResult();
         };
+
         TaskScheduler.UnobservedTaskException += (_, ev) =>
         {
             HandleCrashAsync(ev.Exception).GetAwaiter().GetResult();
             ev.SetObserved();
         };
 
-        if (args.Contains("--console"))
+        if (args.Contains("--console") || Config.Debug)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -60,7 +60,7 @@ static class Program
             await ImageConverter.ConvertDirectoryAsync(Path.Combine(Config.SpaceEngineersDirectory, "Content", "Textures", "GUI", "Icons", "component"), outputDir: "ConvertedComponents");
         }
 
-        var appBuilder = BuildAvaloniaApp();
+        AppBuilder appBuilder = BuildAvaloniaApp();
         appBuilder.StartWithClassicDesktopLifetime(args);
 
         ApplicationStart?.Invoke();
@@ -103,15 +103,18 @@ static class Program
     {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } win })
         {
-            var box = MessageBoxManager.GetMessageBoxStandard(
-                "Crash Detected",
-                $"SEUtilityTools has encountered a crash.\n\n{ex.Message}\n\nDo you want to upload the logs to help improve the tool?",
-                ButtonEnum.YesNo,
-                Icon.Error
-            );
+            return await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                IMsBox<ButtonResult> box = MessageBoxManager.GetMessageBoxStandard(
+                    "Crash Detected",
+                    $"SEUtilityTools has encountered a crash.\n\n{ex.Message}\n\nDo you want to upload the logs to help improve the tool?",
+                    ButtonEnum.YesNo,
+                    Icon.Error
+                );
 
-            var result = await box.ShowWindowDialogAsync(win);
-            return result == ButtonResult.Yes;
+                ButtonResult result = await box.ShowWindowDialogAsync(win);
+                return result == ButtonResult.Yes;
+            });
         }
 
         Console.Error.WriteLine($"Crash: {ex.Message}\nUpload logs? (y/n)");
@@ -122,18 +125,21 @@ static class Program
     {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } win })
         {
-            var box = MessageBoxManager.GetMessageBoxStandard(
-                title,
-                message,
-                ButtonEnum.Ok,
-                Icon.Info
-            );
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                IMsBox<ButtonResult> box = MessageBoxManager.GetMessageBoxStandard(
+                    title,
+                    message,
+                    ButtonEnum.Ok,
+                    Icon.Info
+                );
 
-            await box.ShowWindowDialogAsync(win);
+                await box.ShowWindowDialogAsync(win);
+            });
+
             return;
         }
 
-        // Fallback: no window available
         Console.WriteLine($"[{title}] {message}");
     }
 }

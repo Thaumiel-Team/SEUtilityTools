@@ -12,5 +12,19 @@ namespace SEUtilityTools.API.Data
         public int Port { get; set; }
         public required PlayerResponse PlayerResponse { get; set; }
         public required InfoResponse InfoResponse { get; set; }
+
+        public ServerDataDto ToDto() => new()
+        {
+            Name = Name,
+            PlayerCount = PlayerCount,
+            MaxPlayers = MaxPlayers,
+            Ip = Ip,
+            Port = Port,
+            Players = Players.Select(p => new PlayerDto
+            {
+                Name = p.Name ?? string.Empty,
+                Duration = p.Duration
+            }).ToList()
+        };
     }
 }

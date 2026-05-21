@@ -14,7 +14,7 @@ namespace SEUtilityTools.API.Helpers
         private static string _path = string.Empty;
         public static List<BlueprintData> Blueprints { get; private set; } = [];
 
-        public static async Task Init(bool promptOnLarge = true, CancellationToken ct = default)
+        public static async Task Init(bool promptOnLarge = true, CancellationToken ct = default, IProgress<int>? progress = null)
         {
             _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SpaceEngineers", "Blueprints", "local");
             if (!Directory.Exists(_path))
@@ -25,7 +25,7 @@ namespace SEUtilityTools.API.Helpers
                 return;
             }
 
-            Blueprints = await Load(promptOnLarge, ct).ConfigureAwait(false);
+            Blueprints = await Load(promptOnLarge, ct, progress).ConfigureAwait(false);
         }
 
         public static async Task<List<BlueprintData>> Load(bool promptOnLarge = true, CancellationToken ct = default, IProgress<int>? progress = null)
@@ -171,11 +171,7 @@ namespace SEUtilityTools.API.Helpers
 
         private static WriteableBitmap CreateEmptyBitmap()
         {
-            WriteableBitmap bitmap = new(
-                new PixelSize(1, 1),
-                new Vector(96, 96),
-                PixelFormat.Bgra8888,
-                AlphaFormat.Opaque);
+            WriteableBitmap bitmap = new(new PixelSize(1, 1), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Opaque);
 
             using ILockedFramebuffer fb = bitmap.Lock();
             unsafe

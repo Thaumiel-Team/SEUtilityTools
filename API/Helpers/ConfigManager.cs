@@ -10,7 +10,18 @@ namespace SEUtilityTools.API.Helpers
     {
         public static string ConfigPath = Path.Combine(AppContext.BaseDirectory, "config.yml");
 
-        public static Config Config { get; private set; } = new();
+        public static Config? Config
+        {
+            get
+            {
+                if (field == null)
+                    LoadConfig();
+
+                return field;
+            }
+
+            private set;
+        }
 
         public static void Init()
         {
@@ -67,7 +78,7 @@ namespace SEUtilityTools.API.Helpers
 
         public static void SaveDefaultConfig()
         {
-            if (!Directory.Exists(Config.SpaceEngineersDirectory))
+            if (!Directory.Exists(Config!.SpaceEngineersDirectory))
             {
                 Console.WriteLine("--------------------------------------------------");
                 Console.WriteLine("The Space Engineers steam directory wasn't found!");

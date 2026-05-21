@@ -1,6 +1,7 @@
-using System.Xml.Linq;
 using SEUtilityTools.API.Data;
 using SEUtilityTools.API.Yaml;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace SEUtilityTools.API.Helpers
 {
@@ -12,6 +13,14 @@ namespace SEUtilityTools.API.Helpers
         public static async Task Init()
         {
             Blocks = await GetData();
+        }
+
+        private static string ParseSubtypeName(string subtypeId)
+        {
+            if (string.IsNullOrEmpty(subtypeId))
+                return subtypeId;
+
+            return Regex.Replace(subtypeId, "(?<!^)([A-Z])", " $1");
         }
 
         private static async Task<Dictionary<string, BlockData>> GetData()
@@ -88,6 +97,7 @@ namespace SEUtilityTools.API.Helpers
                                 {
                                     BlockData blockData = new()
                                     {
+                                        Name = ParseSubtypeName(subtypeId),
                                         DLCType = dlc,
                                         Material = components,
                                         PCU = pcu,

@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Projektanker.Icons.Avalonia;           // Fixed: was Optris.Icons.Avalonia
-using Projektanker.Icons.Avalonia.FontAwesome; // Fixed: was Optris.Icons.Avalonia.FontAwesome
+using Projektanker.Icons.Avalonia;
+using Projektanker.Icons.Avalonia.FontAwesome;
 using SEUtilityTools.API.Helpers;
 using SEUtilityTools.API.NET;
 

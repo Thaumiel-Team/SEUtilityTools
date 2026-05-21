@@ -1,20 +1,24 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11222.16 d18.3
+VisualStudioVersion = 18.3.11222.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SEUtilityTools", "SEUtilityTools.csproj", "{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+		LINUX|Any CPU = LINUX|Any CPU
+		LINUX-DEBUG|Any CPU = LINUX-DEBUG|Any CPU
+		WINDOWS|Any CPU = WINDOWS|Any CPU
+		WINDOWS-DEBUG|Any CPU = WINDOWS-DEBUG|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.LINUX|Any CPU.ActiveCfg = WINDOWS-DEBUG|Any CPU
+		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.LINUX-DEBUG|Any CPU.ActiveCfg = LINUX-DEBUG|Any CPU
+		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.LINUX-DEBUG|Any CPU.Build.0 = LINUX-DEBUG|Any CPU
+		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.WINDOWS|Any CPU.ActiveCfg = WINDOWS|Any CPU
+		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.WINDOWS-DEBUG|Any CPU.ActiveCfg = WINDOWS-DEBUG|Any CPU
+		{38B2F56F-EE1E-5B89-E27D-55447F53C8A9}.WINDOWS-DEBUG|Any CPU.Build.0 = WINDOWS-DEBUG|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
