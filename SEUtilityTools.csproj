@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Configurations>WINDOWS;WINDOWS-DEBUG;LINUX;LINUX-DEBUG;</Configurations>
+    <Configurations>WINDOWS;WINDOWS-DEBUG;LINUX;LINUX-DEBUG;WINDOWS-SELF;LINUX-SELF</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'WINDOWS' ">
@@ -16,8 +16,24 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'WINDOWS-SELF' ">
+	<DefineConstants>WINDOWS-SELF;WINDOWS</DefineConstants>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<PublishSingleFile>true</PublishSingleFile>
+	<SelfContained>true</SelfContained>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	<AssemblyName>SEUtilityTools-Windows-SC</AssemblyName>
+	<OutputPath>bin\Windows\Self\</OutputPath>
+	<DebugType>embedded</DebugType>
+  </PropertyGroup>
+	
   <PropertyGroup Condition=" '$(Configuration)' == 'WINDOWS-DEBUG' ">
     <DefineConstants>WINDOWS-DEBUG;WINDOWS</DefineConstants>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<PublishSingleFile>true</PublishSingleFile>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <AssemblyName>SEUtilityTools-Windows</AssemblyName>
     <OutputPath>bin\Windows\Debug\</OutputPath>
     <DebugType>embedded</DebugType>
@@ -25,11 +41,27 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'LINUX' ">
     <DefineConstants>LINUX</DefineConstants>
+	<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+	<PublishSingleFile>true</PublishSingleFile>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <AssemblyName>SEUtilityTools-Linux</AssemblyName>
     <OutputPath>bin\Linux\Release\</OutputPath>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'LINUX-SELF' ">
+	<DefineConstants>LINUX-SELF;LINUX</DefineConstants>
+	<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+	<PublishSingleFile>true</PublishSingleFile>
+	<SelfContained>true</SelfContained>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	<AssemblyName>SEUtilityTools-Linux-SC</AssemblyName>
+	<OutputPath>bin\Linux\Self\</OutputPath>
+	<Optimize>true</Optimize>
+  </PropertyGroup>
+	
   <PropertyGroup Condition=" '$(Configuration)' == 'LINUX-DEBUG' ">
     <DefineConstants>LINUX-DEBUG;LINUX</DefineConstants>
     <AssemblyName>SEUtilityTools-Linux</AssemblyName>
@@ -57,21 +89,8 @@
     <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.4.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(Windows))' == 'true'">
-    <PackageReference Include="Costura.Fody" Version="6.2.0" />
-  </ItemGroup>
-
   <Target Name="CopyToDownloads" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
-    <PropertyGroup>
-      <DownloadPath>C:\Users\Superuser\Downloads\net10.0-windows\</DownloadPath>
-    </PropertyGroup>
     <Exec Command="taskkill /F /IM SEUtilityTools-Windows.exe" IgnoreExitCode="true" ContinueOnError="true" />
     <Message Text="Killed any running SEUtilityTools instances" Importance="high" />
-    <Exec Command="powershell -Command Start-Sleep -Seconds 1" />
-    <ItemGroup>
-      <OutputFiles Include="$(OutputPath)**\*.*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(DownloadPath)%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Message Text="Build output copied to $(DownloadPath)" Importance="high" />
   </Target>
 </Project>
