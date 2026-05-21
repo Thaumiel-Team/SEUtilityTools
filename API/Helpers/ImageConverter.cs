@@ -26,6 +26,21 @@ namespace SEUtilityTools.API.Helpers
                 Directory.CreateDirectory(outputDir);
                 string outputPath = Path.Combine(outputDir, $"{fileName}.png");
 
+                if (_convertedImages.TryGetValue(fileName, out byte[]? cached) && cached is not null)
+                {
+                    if (!File.Exists(outputPath))
+                        await File.WriteAllBytesAsync(outputPath, cached).ConfigureAwait(false);
+                        
+                    return true;
+                }
+
+                if (File.Exists(outputPath))
+                {
+                    byte[] existingPng = await File.ReadAllBytesAsync(outputPath).ConfigureAwait(false);
+                    _convertedImages[fileName] = existingPng;
+                    return true;
+                }
+
                 byte[] ddsData = await File.ReadAllBytesAsync(ddsFilePath).ConfigureAwait(false);
                 byte[] pngData = await Task.Run(() =>
                 {
@@ -36,19 +51,13 @@ namespace SEUtilityTools.API.Helpers
                     int width = (int)ddsFile.header.dwWidth;
                     int height = (int)ddsFile.header.dwHeight;
 
-                    // Reinterpret ColorRgba32[] as a span of raw RGBA bytes for SkiaSharp
                     ReadOnlySpan<byte> pixelBytes = MemoryMarshal.AsBytes(decodedPixels.AsSpan());
 
-                    var imageInfo = new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
-                    using SKImage image = SKImage.FromPixelCopy(imageInfo, pixelBytes);
-                    if (image == null)
-                        throw new InvalidOperationException("Failed to create SkiaSharp image from decoded pixels.");
-
+                    SKImageInfo imageInfo = new(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+                    using SKImage image = SKImage.FromPixelCopy(imageInfo, pixelBytes) ?? throw new InvalidOperationException("Failed to create SkiaSharp image from decoded pixels.");
                     using SKData encoded = image.Encode(SKEncodedImageFormat.Png, 100);
-                    if (encoded == null)
-                        throw new InvalidOperationException("Failed to encode image to PNG.");
 
-                    return encoded.ToArray();
+                    return encoded is null ? throw new InvalidOperationException("Failed to encode image to PNG.") : encoded.ToArray();
                 }).ConfigureAwait(false);
 
                 await File.WriteAllBytesAsync(outputPath, pngData).ConfigureAwait(false);
@@ -77,14 +86,25 @@ namespace SEUtilityTools.API.Helpers
                 string[] ddsFiles = Directory.GetFiles(directoryPath, searchPattern, searchOption);
                 LogManager.Info($"Found {ddsFiles.Length} DDS files in {directoryPath}");
                 Directory.CreateDirectory(outputDir);
-                string[] pngFiles = Directory.GetFiles(outputDir, "*.png", SearchOption.TopDirectoryOnly);
-                if (pngFiles.Length == ddsFiles.Length)
+
+                bool allExist = true;
+                foreach (string ddsPath in ddsFiles)
                 {
-                    LogManager.Info($"Skipping conversion: output folder '{outputDir}' already contains {pngFiles.Length} PNG(s), equal to the DDS count.");
+                    string expectedPng = Path.Combine(outputDir, $"{Path.GetFileNameWithoutExtension(ddsPath)}.png");
+                    if (!File.Exists(expectedPng))
+                    {
+                        allExist = false;
+                        break;
+                    }
+                }
+                
+                if (allExist && ddsFiles.Length > 0)
+                {
+                    LogManager.Info($"Skipping conversion: all {ddsFiles.Length} PNG(s) already exist in '{outputDir}'.");
                     return 0;
                 }
 
-                List<Task<bool>> tasks = [];
+                List<Task<bool>> tasks = new(ddsFiles.Length);
                 foreach (string ddsPath in ddsFiles)
                 {
                     string fileName = Path.GetFileNameWithoutExtension(ddsPath);
@@ -114,13 +134,13 @@ namespace SEUtilityTools.API.Helpers
             }
         }
 
-        public static byte[] GetConvertedImage(string fileName)
+        public static byte[]? GetConvertedImage(string fileName)
         {
             if (_convertedImages.TryGetValue(fileName, out byte[]? data))
                 return data;
 
             LogManager.Warn($"Converted image not found: {fileName}");
-            return null!;
+            return null;
         }
 
         public static void ClearCache()

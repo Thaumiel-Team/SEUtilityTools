@@ -128,43 +128,134 @@
                             </StackPanel>
                         </Button>
                     </Grid>
+
+                    <!-- GPS Group -->
+                    <StackPanel Spacing="0">
+                        <Button x:Name="GPSGroupBtn"
+                                Classes="navItem"
+                                Margin="6,4,0,0"
+                                Click="GPSGroupClick">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Orientation="Horizontal" Spacing="14">
+                                    <ic:Icon Value="fa-solid fa-wrench"
+                                             FontSize="16"
+                                             Foreground="#707070"/>
+                                    <TextBlock Text="GPS Tools"
+                                               Foreground="#909090"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ic:Icon x:Name="GPSChevron"
+                                         Grid.Column="1"
+                                         Value="fa-solid fa-chevron-right"
+                                         FontSize="10"
+                                         Foreground="#555555"
+                                         VerticalAlignment="Center"
+                                         Margin="0,0,8,0"
+                                         RenderTransformOrigin="50%,50%">
+                                    <ic:Icon.RenderTransform>
+                                        <RotateTransform Angle="0"/>
+                                    </ic:Icon.RenderTransform>
+                                </ic:Icon>
+                            </Grid>
+                        </Button>
+
+                        <Border x:Name="GPSContent"
+                                Height="0"
+                                ClipToBounds="True">
+                            <StackPanel Spacing="4" Margin="0,4,0,4">
+                                <Grid>
+                                    <Rectangle x:Name="GpsIndicator"
+                                               Width="3"
+                                               HorizontalAlignment="Left"
+                                               Fill="White"
+                                               IsVisible="False"
+                                               RadiusX="2"
+                                               RadiusY="2"/>
+                                    <Button x:Name="GPSTriangulatorButton"
+                                            Classes="navItem"
+                                            Margin="18,0,0,0"
+                                            Click="GPSTriangulatorButtonClick">
+                                        <StackPanel Orientation="Horizontal" Spacing="14">
+                                            <ic:Icon Value="fa-solid fa-cubes"
+                                                     FontSize="18"
+                                                     Foreground="#a0a0a0"/>
+                                            <TextBlock Text="GPS Triangulator"
+                                                       Foreground="#c0c0c0"
+                                                       FontSize="14"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
                 </StackPanel>
             </Grid>
         </Border>
-            <Grid DockPanel.Dock="Left" RowDefinitions="46,*">
-                <Border Grid.Row="0"
-                        Background="#0f0f0f"
-                        BorderBrush="#1e1e1e"
-                        BorderThickness="0,0,0,1">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                        <Button x:Name="hamburgerBtn"
-                                Grid.Column="0"
-                                Click="HamburgerClick"
-                                Width="36"
-                                Height="36"
+
+        <!-- Main Content -->
+        <Grid RowDefinitions="46,*">
+            <Border Grid.Row="0"
+                    Background="#0f0f0f"
+                    BorderBrush="#1e1e1e"
+                    BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Button x:Name="hamburgerBtn"
+                            Grid.Column="0"
+                            Click="HamburgerClick"
+                            Width="36"
+                            Height="36"
+                            Padding="0"
+                            Background="Transparent"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Margin="10,0,0,0">
+                        <ic:Icon Value="fa-solid fa-bars"
+                                 FontSize="16"
+                                 Foreground="#a0a0a0"/>
+                    </Button>
+
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                Spacing="10"
+                                VerticalAlignment="Center"
+                                Margin="0,0,16,0">
+
+                        <Button x:Name="updateBtn"
+                                Width="28"
+                                Height="28"
                                 Padding="0"
                                 Background="Transparent"
-                                HorizontalAlignment="Left"
+                                BorderThickness="0"
+                                IsVisible="False"
                                 VerticalAlignment="Center"
-                                Margin="10,0,0,0">
-                            <ic:Icon Value="fa-solid fa-bars"
-                                     FontSize="16"
-                                     Foreground="#a0a0a0"/>
+                                ToolTip.Tip="Update available"
+                                Click="UpdateButtonClick">
+                            <Border Width="28"
+                                    Height="28"
+                                    CornerRadius="14"
+                                    Background="#162416">
+                                <ic:Icon Value="fa-solid fa-download"
+                                         FontSize="13"
+                                         Foreground="#22c55e"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"/>
+                            </Border>
                         </Button>
 
-                        <TextBlock Grid.Column="2"
-                                   Text="SE Utilities"
+                        <TextBlock Text="Space Engineers Utilities"
                                    Foreground="#a0a0a0"
                                    FontSize="13"
                                    FontWeight="SemiBold"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,16,0"/>
-                    </Grid>
-                </Border>
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
-                <!-- Content Area -->
-                <Panel x:Name="contentArea" Grid.Row="1" Background="#0f0f0f"/>
-
-            </Grid>
+            <Panel x:Name="contentArea" Grid.Row="1" Background="#0f0f0f"/>
+        </Grid>
     </DockPanel>
 </Window>

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SEUtilityTools.API.Data
+﻿namespace SEUtilityTools.API.Data
 {
     public class PlayerDto
     {

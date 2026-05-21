@@ -14,14 +14,15 @@ namespace SEUtilityTools.API.Helpers
         private static string _path = string.Empty;
         public static List<BlueprintData> Blueprints { get; private set; } = [];
 
+        private static readonly WriteableBitmap _emptyBitmap = CreateEmptyBitmap();
+
         public static async Task Init(bool promptOnLarge = true, CancellationToken ct = default, IProgress<int>? progress = null)
         {
             _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SpaceEngineers", "Blueprints", "local");
+
             if (!Directory.Exists(_path))
             {
-                await MessageBoxManager
-                    .GetMessageBoxStandard("Directory Not Found", $"No blueprints found at {_path}", ButtonEnum.Ok, Icon.Error)
-                    .ShowAsync();
+                await MessageBoxManager.GetMessageBoxStandard("Directory Not Found", $"No blueprints found at {_path}", ButtonEnum.Ok, Icon.Error).ShowAsync();
                 return;
             }
 
@@ -30,129 +31,139 @@ namespace SEUtilityTools.API.Helpers
 
         public static async Task<List<BlueprintData>> Load(bool promptOnLarge = true, CancellationToken ct = default, IProgress<int>? progress = null)
         {
-            ConcurrentBag<BlueprintData> listBag = [];
-            string[]? folders = Directory.EnumerateDirectories(_path).ToArray();
+            if (string.IsNullOrEmpty(_path))
+                throw new InvalidOperationException("BlueprintManager has not been initialized. Call Init() first.");
+
+            string[] folders = Directory.EnumerateDirectories(_path).ToArray();
+
             if (folders.Length == 0)
             {
-                await MessageBoxManager
-                    .GetMessageBoxStandard(string.Empty, "No Blueprints Were Found.", ButtonEnum.Ok, Icon.Info)
-                    .ShowAsync();
+                await MessageBoxManager.GetMessageBoxStandard(string.Empty, "No Blueprints Were Found.", ButtonEnum.Ok, Icon.Info).ShowAsync();
                 return [];
             }
 
             if (promptOnLarge && folders.Length > 100)
             {
-                ButtonResult result = await MessageBoxManager
-                    .GetMessageBoxStandard("Large Blueprint Collection", $"There are {folders.Length} blueprints. Loading them all may take a while.\r\nDo you want to continue?", ButtonEnum.YesNo, Icon.Warning)
-                    .ShowAsync();
-
+                ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Large Blueprint Collection",$"There are {folders.Length} blueprints. Loading them all may take a while.\r\nDo you want to continue?", ButtonEnum.YesNo, Icon.Warning).ShowAsync();
                 if (result == ButtonResult.No)
                     return [];
             }
 
-            int maxDegree = Math.Max(1, Environment.ProcessorCount);
-            using SemaphoreSlim semaphore = new(maxDegree);
-            List<Task> tasks = [];
-            int processed = 0;
-            string fallbackIcon = Path.Combine(AppContext.BaseDirectory, "Data", "IconsPNG", "no_image.png");
+            Dictionary<string, BlockData> exactBlocks = new(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, BlockData> subtypeBlocks = new(StringComparer.OrdinalIgnoreCase);
 
-            static string? GetChildValue(XElement parent, string childLocalName) =>
-                parent.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, childLocalName, StringComparison.OrdinalIgnoreCase))?.Value;
-
-            foreach (string folder in folders)
+            if (BlockManager.Blocks is not null)
             {
-                await semaphore.WaitAsync(ct).ConfigureAwait(false);
-
-                tasks.Add(Task.Run(async () =>
+                foreach (KeyValuePair<string, BlockData> kv in BlockManager.Blocks)
                 {
-                    try
+                    exactBlocks[kv.Key] = kv.Value;
+
+                    string key = kv.Key;
+                    int dash = key.LastIndexOf('-');
+                    if (dash > 0)
                     {
-                        ct.ThrowIfCancellationRequested();
-
-                        string thumbPath = Path.Combine(folder, "thumb.png");
-                        string imgPath = File.Exists(thumbPath) ? thumbPath : fallbackIcon;
-
-                        Bitmap? icon = null;
-                        if (File.Exists(imgPath))
-                        {
-                            try
-                            {
-                                byte[]? bytes = await File.ReadAllBytesAsync(imgPath, ct).ConfigureAwait(false);
-                                using MemoryStream ms = new(bytes);
-                                icon = new Bitmap(ms);
-                            }
-                            catch { }
-                        }
-
-                        List<BlockData> blockDataList = [];
-                        string bpFile = Path.Combine(folder, "bp.sbc");
-                        if (!File.Exists(bpFile))
-                        {
-                            LogManager.Warn($"Blueprint '{folder}' has no bp.sbc file");
-                            return;
-                        }
-
-                        string xmlContent = await File.ReadAllTextAsync(bpFile, ct).ConfigureAwait(false);
-                        XDocument doc = XDocument.Parse(xmlContent);
-
-                        IEnumerable<XElement> cubeGrids = doc.Descendants().Where(x => string.Equals(x.Name.LocalName, "CubeGrid", StringComparison.OrdinalIgnoreCase));
-                        foreach (XElement cubeGrid in cubeGrids)
-                        {
-                            string gridSize = GetChildValue(cubeGrid, "GridSizeEnum") ?? "Large";
-
-                            IEnumerable<XElement> cubeBlocks = cubeGrid.Descendants().Where(x => string.Equals(x.Name.LocalName, "MyObjectBuilder_CubeBlock", StringComparison.OrdinalIgnoreCase) || string.Equals(x.Name.LocalName, "CubeBlock", StringComparison.OrdinalIgnoreCase));
-                            foreach (XElement block in cubeBlocks)
-                            {
-                                string subtypeName = GetChildValue(block, "SubtypeName") ?? string.Empty;
-                                if (string.IsNullOrWhiteSpace(subtypeName))
-                                    continue;
-
-                                BlockData? blockData = null;
-                                if (BlockManager.Blocks != null)
-                                {
-                                    if (!BlockManager.Blocks.TryGetValue($"{subtypeName}-{gridSize}", out blockData))
-                                    {
-                                        KeyValuePair<string, BlockData> kv = BlockManager.Blocks.FirstOrDefault(k => string.Equals(k.Key, subtypeName, StringComparison.OrdinalIgnoreCase));
-                                        if (!kv.Equals(default(KeyValuePair<string, BlockData>)))
-                                            blockData = kv.Value;
-                                    }
-                                }
-
-                                if (blockData is not null)
-                                {
-                                    blockDataList.Add(blockData);
-                                }
-                            }
-                        }
-
-                        BlueprintData data = new()
-                        {
-                            Folder = folder,
-                            Name = Path.GetFileName(folder) ?? folder,
-                            Icon = icon ?? CreateEmptyBitmap(),
-                            Blocks = blockDataList
-                        };
-
-                        listBag.Add(data);
+                        string subtype = key.Substring(0, dash);
+                        subtypeBlocks.TryAdd(subtype, kv.Value);
                     }
-                    catch (OperationCanceledException) { }
-                    catch (Exception ex)
+                    else
                     {
-                        LogManager.Warn($"Failed to load blueprint '{folder}': {ex}");
+                        subtypeBlocks.TryAdd(key, kv.Value);
                     }
-                    finally
-                    {
-                        int value = Interlocked.Increment(ref processed);
-                        progress?.Report(value);
-                        semaphore.Release();
-                    }
-                }, ct));
+                }
             }
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            string fallbackIcon = Path.Combine(AppContext.BaseDirectory, "Data", "IconsPNG", "no_image.png");
+            ConcurrentBag<BlueprintData> results = [];
+            int processed = 0;
 
-            List<BlueprintData> resultList = listBag.OrderBy(b => b.Name, StringComparer.OrdinalIgnoreCase).ToList();
-            return resultList;
+            await Parallel.ForEachAsync(folders, new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount),
+                CancellationToken = ct
+            }, async (folder, ct) =>
+            {
+                List<BlockData> blockDataList = [];
+                Bitmap? icon = null;
+
+                try
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    string thumbPath = Path.Combine(folder, "thumb.png");
+                    string? imgPath = File.Exists(thumbPath) ? thumbPath : (File.Exists(fallbackIcon) ? fallbackIcon : null);
+
+                    if (imgPath is not null)
+                    {
+                        try
+                        {
+                            using FileStream fs = new(imgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                            icon = new Bitmap(fs);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogManager.Warn($"Failed to load thumbnail for '{folder}': {ex.Message}");
+                        }
+                    }
+
+                    string bpFile = Path.Combine(folder, "bp.sbc");
+                    if (!File.Exists(bpFile))
+                    {
+                        LogManager.Warn($"Blueprint '{folder}' has no bp.sbc file");
+                        return;
+                    }
+
+                    await using FileStream xmlFs = new(bpFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous);
+                    using StreamReader xmlReader = new(xmlFs);
+
+                    foreach (XElement cubeGrid in (await XDocument.LoadAsync(xmlReader, LoadOptions.None, ct).ConfigureAwait(false)).Descendants().Where(x => string.Equals(x.Name.LocalName, "CubeGrid", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        string gridSize = GetChildValue(cubeGrid, "GridSizeEnum") ?? "Large";
+
+                        foreach (XElement block in cubeGrid.Descendants().Where(x => string.Equals(x.Name.LocalName, "MyObjectBuilder_CubeBlock", StringComparison.OrdinalIgnoreCase) || string.Equals(x.Name.LocalName, "CubeBlock", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            string subtypeName = GetChildValue(block, "SubtypeName") ?? string.Empty;
+                            if (string.IsNullOrWhiteSpace(subtypeName))
+                                continue;
+
+                            string exactKey = $"{subtypeName}-{gridSize}";
+
+                            if (!exactBlocks.TryGetValue(exactKey, out BlockData? blockData))
+                            {
+                                subtypeBlocks.TryGetValue(subtypeName, out blockData);
+                            }
+
+                            if (blockData is not null)
+                            {
+                                blockDataList.Add(blockData);
+                            }
+                        }
+                    }
+
+                    BlueprintData data = new()
+                    {
+                        Folder = folder,
+                        Name = Path.GetFileName(folder) ?? folder,
+                        Icon = icon ?? _emptyBitmap,
+                        Blocks = blockDataList
+                    };
+
+                    results.Add(data);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Warn($"Failed to load blueprint '{folder}': {ex}");
+                }
+                finally
+                {
+                    progress?.Report(Interlocked.Increment(ref processed));
+                }
+            }).ConfigureAwait(false);
+
+            return results.OrderBy(b => b.Name, StringComparer.OrdinalIgnoreCase).ToList();
         }
 
         public static void Clear()
@@ -162,7 +173,7 @@ namespace SEUtilityTools.API.Helpers
 
             foreach (BlueprintData bp in Blueprints)
             {
-                if (bp.Icon is IDisposable disposable)
+                if (bp.Icon is IDisposable disposable && !ReferenceEquals(bp.Icon, _emptyBitmap))
                     disposable.Dispose();
             }
 
@@ -172,7 +183,6 @@ namespace SEUtilityTools.API.Helpers
         private static WriteableBitmap CreateEmptyBitmap()
         {
             WriteableBitmap bitmap = new(new PixelSize(1, 1), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Opaque);
-
             using ILockedFramebuffer fb = bitmap.Lock();
             unsafe
             {
@@ -181,5 +191,8 @@ namespace SEUtilityTools.API.Helpers
 
             return bitmap;
         }
+
+        private static string? GetChildValue(XElement parent, string childLocalName) =>
+            parent.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, childLocalName, StringComparison.OrdinalIgnoreCase))?.Value;
     }
 }
