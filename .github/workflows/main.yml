@@ -23,40 +23,40 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Publish — Windows
-        run: dotnet publish SEUtilityTools.csproj --configuration WINDOWS
+        run: dotnet publish SEUtilityTools.csproj --configuration WINDOWS --output publish/Windows
 
       - name: Publish — Windows (Self-Contained)
-        run: dotnet publish SEUtilityTools.csproj --configuration WINDOWS-SELF
+        run: dotnet publish SEUtilityTools.csproj --configuration WINDOWS-SELF --output publish/Windows-SC
 
       - name: Publish — Linux
-        run: dotnet publish SEUtilityTools.csproj --configuration LINUX
+        run: dotnet publish SEUtilityTools.csproj --configuration LINUX --output publish/Linux
 
       - name: Publish — Linux (Self-Contained)
-        run: dotnet publish SEUtilityTools.csproj --configuration LINUX-SELF
-        
+        run: dotnet publish SEUtilityTools.csproj --configuration LINUX-SELF --output publish/Linux-SC
+
       - name: Upload Windows
         uses: actions/upload-artifact@v4
         with:
           name: SEUtilityTools-Windows
-          path: bin/Windows/Release/
+          path: publish/Windows/
 
       - name: Upload Windows (Self-Contained)
         uses: actions/upload-artifact@v4
         with:
           name: SEUtilityTools-Windows-SC
-          path: bin/Windows/Self/
+          path: publish/Windows-SC/
 
       - name: Upload Linux
         uses: actions/upload-artifact@v4
         with:
           name: SEUtilityTools-Linux
-          path: bin/Linux/Release/
+          path: publish/Linux/
 
       - name: Upload Linux (Self-Contained)
         uses: actions/upload-artifact@v4
         with:
           name: SEUtilityTools-Linux-SC
-          path: bin/Linux/Self/
+          path: publish/Linux-SC/
 
       - name: Create draft release
         if: github.event_name == 'push'
@@ -77,9 +77,9 @@ jobs:
 
             **To publish:** edit this release, set a proper version tag, update the notes, and hit Publish.
           files: |
-            bin/Windows/Release/SEUtilityTools-Windows.exe
-            bin/Windows/Self/SEUtilityTools-Windows-SC.exe
-            bin/Linux/Release/SEUtilityTools-Linux
-            bin/Linux/Self/SEUtilityTools-Linux-SC
+            publish/Windows/SEUtilityTools-Windows.exe
+            publish/Windows-SC/SEUtilityTools-Windows-SC.exe
+            publish/Linux/SEUtilityTools-Linux
+            publish/Linux-SC/SEUtilityTools-Linux-SC
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
