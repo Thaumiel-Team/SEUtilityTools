@@ -218,13 +218,40 @@
                                  Foreground="#a0a0a0"/>
                     </Button>
 
-                    <TextBlock Grid.Column="2"
-                               Text="Space Engineers Utilities"
-                               Foreground="#a0a0a0"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               Margin="0,0,16,0"/>
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                Spacing="10"
+                                VerticalAlignment="Center"
+                                Margin="0,0,16,0">
+
+                        <Button x:Name="updateBtn"
+                                Width="28"
+                                Height="28"
+                                Padding="0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                IsVisible="False"
+                                VerticalAlignment="Center"
+                                ToolTip.Tip="Update available"
+                                Click="UpdateButtonClick">
+                            <Border Width="28"
+                                    Height="28"
+                                    CornerRadius="14"
+                                    Background="#162416">
+                                <ic:Icon Value="fa-solid fa-download"
+                                         FontSize="13"
+                                         Foreground="#22c55e"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"/>
+                            </Border>
+                        </Button>
+
+                        <TextBlock Text="Space Engineers Utilities"
+                                   Foreground="#a0a0a0"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
                 </Grid>
             </Border>
 

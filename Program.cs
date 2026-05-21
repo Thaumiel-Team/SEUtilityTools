@@ -20,7 +20,7 @@ static class Program
     private const int ATTACH_PARENT_PROCESS = -1;
 #endif
 
-    public static Version Version = new(1, 0, 0);
+    public static Version Version = new(1, 1, 0);
     public static event Action? ApplicationStart;
     public static Config Config => ConfigManager.Config;
 

@@ -7,12 +7,7 @@ namespace SEUtilityTools.API.NET
 {
     public static class VersionManager
     {
-        private const string API = "https://mertversionmanager.thaumiel-servers.workers.dev";
-
-        public static bool Recalled { get; private set; }
-        public static bool ForceDebug { get; private set; }
-        public static bool PreRelease { get; private set; }
-        public static string RecallReason { get; private set; } = string.Empty;
+        private const string API = "https://seversionmanager.thaumiel-servers.workers.dev";
 
         private static readonly HttpClient HttpClient = new();
         public static Dictionary<Version, VersionInfo> Versions { get; private set; } = [];
@@ -26,7 +21,7 @@ namespace SEUtilityTools.API.NET
         {
             try
             {
-                List<VersionInfo>? versionList = JsonSerializer.Deserialize<List<VersionInfo>>(await HttpClient.GetStringAsync(API));
+                List<VersionInfo>? versionList = JsonSerializer.Deserialize<List<VersionInfo>>(await HttpClient.GetStringAsync($"{API}/versions"));
                 if (versionList == null || versionList.Count == 0)
                 {
                     LogManager.Warn("Version API returned empty or null response");
@@ -61,31 +56,6 @@ namespace SEUtilityTools.API.NET
                 LogManager.Info($"Current version {Program.Version} not found in version list");
                 return;
             }
-
-            Recalled = currentVersion.Recalled;
-            PreRelease = currentVersion.PreRelease;
-            ForceDebug = currentVersion.ForceDebug;
-            RecallReason = currentVersion.RecallReason;
-
-            if (Recalled)
-            {
-                LogManager.Warn($"Current version {Program.Version} has been recalled: {RecallReason}");
-                await ShowMessageBox(
-                    "Version Recalled",
-                    $"This version has been recalled!\n\nReason: {RecallReason}\n\nPlease update to the latest version.",
-                    ButtonEnum.Ok,
-                    Icon.Warning);
-            }
-
-            if (PreRelease)
-            {
-                const string preReleaseMessage = "You are running a Pre-Release version of SEUtilityTools. This version may contain bugs or unfinished features. Please report all bugs on the Github repo under the issues tab with the Pre-Release tag.";
-                LogManager.Info(preReleaseMessage);
-                await ShowMessageBox("Pre-Release", preReleaseMessage, ButtonEnum.Ok, Icon.Info);
-            }
-
-            if (ForceDebug)
-                LogManager.Info("Debug force enabled");
         }
 
         /// <summary>
@@ -111,12 +81,12 @@ namespace SEUtilityTools.API.NET
         public static VersionInfo? GetVersionInfo(Version version) =>
             Versions.TryGetValue(version, out VersionInfo? info) ? info : null;
 
-        public static VersionInfo? GetLatestVersion(bool includePreRelease = false) =>
-            Versions.Values.Where(v => includePreRelease || !v.PreRelease).OrderByDescending(v => v.Version).FirstOrDefault();
+        public static VersionInfo? GetLatestVersion() =>
+            Versions.Values.OrderByDescending(v => v.Version).FirstOrDefault();
 
-        public static bool IsUpdateAvailable(bool includePreRelease = false)
+        public static bool IsUpdateAvailable()
         {
-            VersionInfo? latest = GetLatestVersion(includePreRelease);
+            VersionInfo? latest = GetLatestVersion();
             return latest != null && latest.Version > Program.Version;
         }
     }

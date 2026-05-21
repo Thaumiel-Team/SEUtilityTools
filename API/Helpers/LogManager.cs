@@ -59,7 +59,7 @@ namespace SEUtilityTools.API.Helpers
         public static void Debug(string message)
         {
             Logs.Add(new(message, LogSeverity.Debug, DateTime.Now));
-            if (Program.Config.Debug || VersionManager.ForceDebug)
+            if (Program.Config.Debug)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"{DateTime.Now:HH:mm:ss} [DEBUG] {message}");
