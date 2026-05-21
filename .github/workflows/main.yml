@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: '10.0.x'
 
@@ -26,17 +26,17 @@ jobs:
         run: dotnet restore
 
       - name: Publish — Windows
-        run: dotnet publish --configuration WINDOWS --no-restore
-
+        run: dotnet publish SEUtilityTools.csproj --configuration WINDOWS --no-restore
+      
       - name: Publish — Windows (Self-Contained)
-        run: dotnet publish --configuration WINDOWS-SELF --no-restore
-
+        run: dotnet publish SEUtilityTools.csproj --configuration WINDOWS-SELF --no-restore
+      
       - name: Publish — Linux
-        run: dotnet publish --configuration LINUX --no-restore
-
+        run: dotnet publish SEUtilityTools.csproj --configuration LINUX --no-restore
+      
       - name: Publish — Linux (Self-Contained)
-        run: dotnet publish --configuration LINUX-SELF --no-restore
-
+        run: dotnet publish SEUtilityTools.csproj --configuration LINUX-SELF --no-restore
+        
       - name: Upload Windows
         uses: actions/upload-artifact@v4
         with:
